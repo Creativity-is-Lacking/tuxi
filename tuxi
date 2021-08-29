@@ -57,6 +57,7 @@ esac
 #   the first word should be the name of the a_function() followed by a space
 #   you can disable tests by commenting out the line(s)
 priority="
+image          # Search for an image
 tracklist       # Album track lists ( eg: noisia outer edges tracklist )
 richcast        # Rich Rich Answers ( eg: social network cast )
 define          # Define ( eg: define Aggrandize )
@@ -740,6 +741,23 @@ a_tracklist() {
             printf '%s\n' "$tracklist_links"
         fi
     fi
+}
+# Search for images ( eg: dog image)
+a_image() {
+    google_img_url="https://www.google.com/search?tbm=isch&hl="${LANGUAGE:="${LANG:=en_US}"}""
+    echo "url= $google_img_url"
+    google_img_html=$(curl -Gs --compressed "$google_img_url" --user-agent "'$user_agent'" --data-urlencode "q='$query'")
+    echo "$(printf "%s\n" "$google_img_html" | pup 'div.mJxzWe' | pup 'img attr{src}' | {
+        while IFS= read -r links_foo; do
+            is64encoded="$("$links_foo" ~= "data")"
+            echo $is64encoded
+            if ! $is64encoded
+            then
+                printf "first: %s\n" "$links_foo"; 
+            fi
+        done
+        })"
+    #echo "$google_img_html" | pup 'div.mJxzWe' | pup 'img' | recode html..ISO-8859-1 | w3m
 }
 
 ###############################
